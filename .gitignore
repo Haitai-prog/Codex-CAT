@@ -10,3 +10,4 @@ dist/
 backend/data/
 .DS_Store
 Thumbs.db
+start.bat
