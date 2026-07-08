@@ -221,7 +221,7 @@ function GlossaryModal({ entries, onClose }: { entries: GlossaryEntry[]; onClose
           <h2 className="font-semibold">Glossary</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">&times;</button>
         </div>
-        <div className="p-4 space-y-2 border-b"><label className="block text-xs font-medium text-gray-500 mb-1">Import Excel</label><input type="file" accept=".xlsx,.xls" onChange={async e=>{const f=e.target.files?.[0];if(f){await api.importGlossary(f);onClose()}}} className="text-xs w-full mb-2"/>
+        <div className="p-4 space-y-2 border-b"><label className="block text-xs font-medium text-gray-500 mb-1 bg-blue-50 p-2 rounded">Import Excel (.xlsx)</label><input type="file" accept=".xlsx,.xls" onChange={async e=>{const f=e.target.files?.[0];if(f){await api.importGlossary(f);onClose()}}} className="text-xs w-full"/>
           <div className="flex gap-2">
             <input value={sLang} onChange={e => setSLang(e.target.value)} placeholder="Source lang" className="flex-1 border rounded px-2 py-1 text-xs" />
             <input value={tLang} onChange={e => setTLang(e.target.value)} placeholder="Target lang" className="flex-1 border rounded px-2 py-1 text-xs" />
