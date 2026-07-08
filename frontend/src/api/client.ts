@@ -40,5 +40,10 @@ export const api = {
     request<import('../types').GlossaryEntry>('/glossary', { method: 'POST', body: JSON.stringify(data) }),
   updateGlossaryEntry: (id: number, data: { source_lang: string; target_lang: string; source_term: string; target_term: string; note?: string | null }) =>
     request<import('../types').GlossaryEntry>('/glossary/' + id, { method: 'PUT', body: JSON.stringify(data) }),
+
+  importGlossary: (file: File) => {
+    const form = new FormData(); form.append('file', file);
+    return fetch(BASE + '/glossary/import', { method: 'POST', body: form }).then(r => r.json());
+  },
   deleteGlossaryEntry: (id: number) => request<void>('/glossary/' + id, { method: 'DELETE' }),
 };

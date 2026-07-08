@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
 from models import GlossaryEntry
 from schemas import GlossaryEntryCreate, GlossaryEntryOut
+import openpyxl, io
 
 router = APIRouter(prefix="/api/glossary", tags=["glossary"])
+
 
 
 @router.get("", response_model=list[GlossaryEntryOut])
@@ -13,8 +15,6 @@ def list_entries(db: Session = Depends(get_db)):
     entries = db.scalars(select(GlossaryEntry).order_by(GlossaryEntry.created_at.desc())).all()
     return [GlossaryEntryOut.model_validate(e) for e in entries]
 
-
-@router.post("", response_model=GlossaryEntryOut, status_code=201)
 def create_entry(data: GlossaryEntryCreate, db: Session = Depends(get_db)):
     entry = GlossaryEntry(
         source_lang=data.source_lang,

@@ -1,4 +1,4 @@
-import os, webbrowser, threading, sys
+import os, webbrowser, threading
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -10,9 +10,9 @@ from api.segments import router as segments_router
 from api.tm import router as tm_router
 from api.translations import router as translations_router
 from api.glossary import router as glossary_router
+from api.glossary_import import router as glossary_import_router
 
 app = FastAPI(title="Codex CAT", version="0.2.0")
-
 BASE_DIR = Path(__file__).parent.parent
 STATIC_DIR = BASE_DIR / "frontend" / "dist"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
@@ -22,6 +22,7 @@ app.include_router(documents_router)
 app.include_router(segments_router)
 app.include_router(tm_router)
 app.include_router(glossary_router)
+app.include_router(glossary_import_router)
 app.include_router(translations_router)
 
 

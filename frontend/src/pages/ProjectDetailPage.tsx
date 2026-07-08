@@ -180,7 +180,7 @@ export default function ProjectDetailPage() {
           {terms.map((t, i) => (
             <div key={i} className="p-2 bg-amber-50 rounded text-xs">
               <span className="font-medium">{t.source_term}</span>
-              <span className="text-gray-400 mx-1">â†’</span>
+              <span className="text-gray-400 mx-1">â†?/span>
               <span>{t.target_term}</span>
               {t.note && <div className="text-gray-400 mt-0.5">{t.note}</div>}
             </div>
@@ -221,7 +221,7 @@ function GlossaryModal({ entries, onClose }: { entries: GlossaryEntry[]; onClose
           <h2 className="font-semibold">Glossary</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">&times;</button>
         </div>
-        <div className="p-4 space-y-2 border-b">
+        <div className="p-4 space-y-2 border-b"><label className="block text-xs font-medium text-gray-500 mb-1">Import Excel</label><input type="file" accept=".xlsx,.xls" onChange={async e=>{const f=e.target.files?.[0];if(f){await api.importGlossary(f);onClose()}}} className="text-xs w-full mb-2"/>
           <div className="flex gap-2">
             <input value={sLang} onChange={e => setSLang(e.target.value)} placeholder="Source lang" className="flex-1 border rounded px-2 py-1 text-xs" />
             <input value={tLang} onChange={e => setTLang(e.target.value)} placeholder="Target lang" className="flex-1 border rounded px-2 py-1 text-xs" />
@@ -236,7 +236,7 @@ function GlossaryModal({ entries, onClose }: { entries: GlossaryEntry[]; onClose
             <div key={e.id} className="flex justify-between items-center text-sm border-b pb-1">
               <div>
                 <span className="font-medium">{e.source_term}</span>
-                <span className="text-gray-400 mx-1">â†’</span>
+                <span className="text-gray-400 mx-1">â†?/span>
                 <span>{e.target_term}</span>
                 <span className="text-xs text-gray-400 ml-2">[{e.source_lang}â†’{e.target_lang}]</span>
               </div>
