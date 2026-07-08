@@ -6,7 +6,10 @@ from database import get_db
 from models import Project, SourceDocument, Segment, SegmentStatus, TokenUsage
 from services.llm_service import translate_text, DEFAULT_MODEL
 from services.glossary_service import find_terms
-from services.tm_service import add_to_tm
+from services.tm_service import search_tm, add_to_tm
+
+
+_ = time  # silence unused import warning
 
 router = APIRouter(prefix="/api", tags=["ai-translation"])
 
@@ -41,35 +44,45 @@ async def pre_translate(project_id: int, db: Session = Depends(get_db)):
 
     for seg in segments:
         try:
-            seg_glossary = find_terms(db, seg.source_text, project.source_lang, project.target_lang)
-            glossary_dict = {g.source_term: g.target_term for g in seg_glossary} if seg_glossary else None
-
-            translation, in_tokens, out_tokens, duration_ms = await translate_text(
-                seg.source_text,
-                project.source_lang,
-                project.target_lang,
-                glossary_dict,
-            )
+            # Step 1: Check TM for high-confidence match first
+            tm_results = search_tm(db, seg.source_text, project.source_lang, project.target_lang, top_k=1, threshold=95)
+            from_tm = False
+            if tm_results:
+                tu, score = tm_results[0]
+                translation = tu.target_text
+                in_tokens = 0
+                out_tokens = 0
+                duration_ms = 0
+                from_tm = True
+            else:
+                # Step 2: No good TM match, call AI
+                seg_glossary = find_terms(db, seg.source_text, project.source_lang, project.target_lang)
+                glossary_dict = {g.source_term: g.target_term for g in seg_glossary} if seg_glossary else None
+                translation, in_tokens, out_tokens, duration_ms = await translate_text(
+                    seg.source_text,
+                    project.source_lang,
+                    project.target_lang,
+                    glossary_dict,
+                )
 
             seg.target_text = translation
             seg.status = SegmentStatus.translated
             db.add(seg)
 
-            add_to_tm(db, seg.source_text, translation, project.source_lang, project.target_lang)
-
-            db.add(TokenUsage(
-                project_id=project_id,
-                source_text=seg.source_text,
-                target_text=translation,
-                input_tokens=in_tokens,
-                output_tokens=out_tokens,
-                model=DEFAULT_MODEL,
-                duration_ms=duration_ms,
-            ))
-
-            total_input_tokens += in_tokens
-            total_output_tokens += out_tokens
-            total_duration += duration_ms
+            if not from_tm:
+                add_to_tm(db, seg.source_text, translation, project.source_lang, project.target_lang)
+                db.add(TokenUsage(
+                    project_id=project_id,
+                    source_text=seg.source_text,
+                    target_text=translation,
+                    input_tokens=in_tokens,
+                    output_tokens=out_tokens,
+                    model=DEFAULT_MODEL,
+                    duration_ms=duration_ms,
+                ))
+                total_input_tokens += in_tokens
+                total_output_tokens += out_tokens
+                total_duration += duration_ms
             translated_count += 1
             db.commit()
 
